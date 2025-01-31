@@ -1,0 +1,50 @@
+# Inventory Service Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inventory-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: inventory-service
+  template:
+    metadata:
+      annotations:
+        io.containerd.cri.runtime-handler: kata-qemu-sev
+      labels:
+        app: inventory-service
+    spec:
+      runtimeClassName: kata-qemu-sev
+      containers:
+      - name: inventory-service
+        image: tanakaryuki/inventory-service:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 50054
+        env:
+        - name: DB_HOST
+          value: "postgres"
+        - name: DB_PORT
+          value: "5432"
+        - name: DB_USER
+          value: "inventoryuser"
+        - name: DB_PASSWORD
+          value: "password"
+        - name: DB_NAME
+          value: "inventorydb"
+
+---
+# Inventory Service Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: inventory-service
+spec:
+  selector:
+    app: inventory-service
+  ports:
+    - protocol: TCP
+      port: 50054
+      targetPort: 50054
+  type: ClusterIP

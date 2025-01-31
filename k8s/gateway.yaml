@@ -1,0 +1,48 @@
+# API Gateway Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-gateway
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: api-gateway
+  template:
+    metadata:
+      annotations:
+        io.containerd.cri.runtime-handler: kata-qemu-sev
+      labels:
+        app: api-gateway
+    spec:
+      runtimeClassName: kata-qemu-sev
+      containers:
+      - name: api-gateway
+        image: tanakaryuki/api-gateway:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+        env:
+        - name: USER_GRPC
+          value: "user-service:50051"
+        - name: PRODUCT_GRPC
+          value: "product-service:50052"
+        - name: ORDER_GRPC
+          value: "order-service:50053"
+        - name: INVENTORY_GRPC
+          value: "inventory-service:50054"
+
+---
+# API Gateway Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: api-gateway
+spec:
+  selector:
+    app: api-gateway
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+  type: LoadBalancer

@@ -1,0 +1,50 @@
+# User Service Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: user-service
+  template:
+    metadata:
+      annotations:
+          io.containerd.cri.runtime-handler: kata-qemu-sev
+      labels:
+        app: user-service
+    spec:
+      runtimeClassName: kata-qemu-sev
+      containers:
+      - name: user-service
+        image: tanakaryuki/user-service:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 50051
+        env:
+        - name: DB_HOST
+          value: "postgres"
+        - name: DB_PORT
+          value: "5432"
+        - name: DB_USER
+          value: "user"
+        - name: DB_PASSWORD
+          value: "password"
+        - name: DB_NAME
+          value: "userdb"
+
+---
+# User Service Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: user-service
+spec:
+  selector:
+    app: user-service
+  ports:
+    - protocol: TCP
+      port: 50051
+      targetPort: 50051
+  type: ClusterIP

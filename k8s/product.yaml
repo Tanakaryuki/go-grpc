@@ -1,0 +1,50 @@
+# Product Service Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: product-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: product-service
+  template:
+    metadata:
+      annotations:
+        io.containerd.cri.runtime-handler: kata-qemu-sev
+      labels:
+        app: product-service
+    spec:
+      runtimeClassName: kata-qemu-sev
+      containers:
+      - name: product-service
+        image: tanakaryuki/product-service:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 50052
+        env:
+        - name: DB_HOST
+          value: "postgres"
+        - name: DB_PORT
+          value: "5432"
+        - name: DB_USER
+          value: "productuser"
+        - name: DB_PASSWORD
+          value: "password"
+        - name: DB_NAME
+          value: "productdb"
+
+---
+# Product Service Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: product-service
+spec:
+  selector:
+    app: product-service
+  ports:
+    - protocol: TCP
+      port: 50052
+      targetPort: 50052
+  type: ClusterIP
