@@ -1,0 +1,320 @@
+# PostgreSQL Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:13
+        ports:
+        - containerPort: 5432
+        env:
+        - name: POSTGRES_USER
+          value: "postgres"
+        - name: POSTGRES_PASSWORD
+          value: "postgres"
+        - name: POSTGRES_DB
+          value: "postgres"
+        volumeMounts:
+        - name: postgres-data
+          mountPath: /var/lib/postgresql/data
+        - name: init-sql
+          mountPath: /docker-entrypoint-initdb.d
+      volumes:
+      - name: postgres-data
+        emptyDir: {}
+      - name: init-sql
+        configMap:
+          name: postgres-init-sql
+
+---
+# PostgreSQL Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+spec:
+  selector:
+    app: postgres
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432
+  type: ClusterIP
+
+---
+# ConfigMap for PostgreSQL Initialization
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-init-sql
+data:
+  init.sql: |
+    CREATE DATABASE userdb;
+    CREATE USER app_user WITH ENCRYPTED PASSWORD 'password';
+    GRANT ALL PRIVILEGES ON DATABASE userdb TO app_user;
+    
+    CREATE DATABASE productdb;
+    CREATE USER productuser WITH ENCRYPTED PASSWORD 'password';
+    GRANT ALL PRIVILEGES ON DATABASE productdb TO productuser;
+    
+    CREATE DATABASE orderdb;
+    CREATE USER orderuser WITH ENCRYPTED PASSWORD 'password';
+    GRANT ALL PRIVILEGES ON DATABASE orderdb TO orderuser;
+    
+    CREATE DATABASE inventorydb;
+    CREATE USER inventoryuser WITH ENCRYPTED PASSWORD 'password';
+    GRANT ALL PRIVILEGES ON DATABASE inventorydb TO inventoryuser;
+
+---
+# User Service Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: user-service
+  template:
+    metadata:
+      labels:
+        app: user-service
+    spec:
+      containers:
+      - name: user-service
+        image: tanakaryuki/user-service:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 50051
+        env:
+        - name: DB_HOST
+          value: "postgres"
+        - name: DB_PORT
+          value: "5432"
+        - name: DB_USER
+          value: "user"
+        - name: DB_PASSWORD
+          value: "password"
+        - name: DB_NAME
+          value: "userdb"
+
+---
+# User Service Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: user-service
+spec:
+  selector:
+    app: user-service
+  ports:
+    - protocol: TCP
+      port: 50051
+      targetPort: 50051
+  type: ClusterIP
+
+---
+# Product Service Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: product-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: product-service
+  template:
+    metadata:
+      labels:
+        app: product-service
+    spec:
+      containers:
+      - name: product-service
+        image: tanakaryuki/product-service:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 50052
+        env:
+        - name: DB_HOST
+          value: "postgres"
+        - name: DB_PORT
+          value: "5432"
+        - name: DB_USER
+          value: "productuser"
+        - name: DB_PASSWORD
+          value: "password"
+        - name: DB_NAME
+          value: "productdb"
+
+---
+# Product Service Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: product-service
+spec:
+  selector:
+    app: product-service
+  ports:
+    - protocol: TCP
+      port: 50052
+      targetPort: 50052
+  type: ClusterIP
+
+---
+# Order Service Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: order-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: order-service
+  template:
+    metadata:
+      labels:
+        app: order-service
+    spec:
+      containers:
+      - name: order-service
+        image: tanakaryuki/order-service:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 50053
+        env:
+        - name: DB_HOST
+          value: "postgres"
+        - name: DB_PORT
+          value: "5432"
+        - name: DB_USER
+          value: "orderuser"
+        - name: DB_PASSWORD
+          value: "password"
+        - name: DB_NAME
+          value: "orderdb"
+
+---
+# Order Service Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: order-service
+spec:
+  selector:
+    app: order-service
+  ports:
+    - protocol: TCP
+      port: 50053
+      targetPort: 50053
+  type: ClusterIP
+
+---
+# Inventory Service Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inventory-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: inventory-service
+  template:
+    metadata:
+      labels:
+        app: inventory-service
+    spec:
+      containers:
+      - name: inventory-service
+        image: tanakaryuki/inventory-service:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 50054
+        env:
+        - name: DB_HOST
+          value: "postgres"
+        - name: DB_PORT
+          value: "5432"
+        - name: DB_USER
+          value: "inventoryuser"
+        - name: DB_PASSWORD
+          value: "password"
+        - name: DB_NAME
+          value: "inventorydb"
+
+---
+# Inventory Service Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: inventory-service
+spec:
+  selector:
+    app: inventory-service
+  ports:
+    - protocol: TCP
+      port: 50054
+      targetPort: 50054
+  type: ClusterIP
+
+---
+# API Gateway Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-gateway
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: api-gateway
+  template:
+    metadata:
+      labels:
+        app: api-gateway
+    spec:
+      containers:
+      - name: api-gateway
+        image: tanakaryuki/api-gateway:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8080
+        env:
+        - name: USER_GRPC
+          value: "user-service:50051"
+        - name: PRODUCT_GRPC
+          value: "product-service:50052"
+        - name: ORDER_GRPC
+          value: "order-service:50053"
+        - name: INVENTORY_GRPC
+          value: "inventory-service:50054"
+
+---
+# API Gateway Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: api-gateway
+spec:
+  selector:
+    app: api-gateway
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+  type: LoadBalancer

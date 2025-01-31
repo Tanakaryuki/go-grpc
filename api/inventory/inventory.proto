@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+package inventory;
+
+option go_package = "github.com/Tanakaryuki/go-grpc/api/inventory;inventory";
+
+import "google/api/annotations.proto";
+
+service InventoryService {
+  rpc AddInventory (AddInventoryRequest) returns (AddInventoryResponse) {
+    option (google.api.http) = {
+      post: "/v1/inventory"
+      body: "*"
+    };
+  }
+  rpc GetInventory (GetInventoryRequest) returns (GetInventoryResponse) {
+    option (google.api.http) = {
+      get: "/v1/inventory/{product_id}"
+    };
+  }
+}
+
+message AddInventoryRequest {
+  string product_id = 1;
+  int32 quantity = 2;
+}
+
+message AddInventoryResponse {
+  string id = 1;
+}
+
+message GetInventoryRequest {
+  string product_id = 1;
+}
+
+message GetInventoryResponse {
+  string product_id = 1;
+  int32 quantity = 2;
+}

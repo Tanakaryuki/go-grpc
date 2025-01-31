@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inventory-service
+  namespace: go-grpc
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: inventory-service
+  template:
+    metadata:
+      labels:
+        app: inventory-service
+    spec:
+      containers:
+      - name: inventory-service
+        image: inventory-service:latest
+        ports:
+        - containerPort: 50054
+        env:
+        - name: DB_HOST
+          value: "postgres"
+        - name: DB_PORT
+          value: "5432"
+        - name: DB_USER
+          value: "inventoryuser"
+        - name: DB_PASSWORD
+          value: "password"
+        - name: DB_NAME
+          value: "inventorydb"
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 50054
+          initialDelaySeconds: 5
+          periodSeconds: 10

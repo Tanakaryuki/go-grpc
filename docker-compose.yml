@@ -1,0 +1,114 @@
+# docker-compose.yml
+
+services:
+  postgres:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./docker/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - microservices-net
+
+  user-service:
+    build:
+      context: .
+      dockerfile: docker/user.Dockerfile
+    ports:
+      - "50051:50051"
+    environment:
+      PORT: 50051
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: app_user
+      DB_PASSWORD: password
+      DB_NAME: userdb
+    depends_on:
+      - postgres
+    networks:
+      - microservices-net
+
+  product-service:
+    build:
+      context: .
+      dockerfile: docker/product.Dockerfile
+    ports:
+      - "50052:50052"
+    environment:
+      PORT: 50052
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: productuser
+      DB_PASSWORD: password
+      DB_NAME: productdb
+    depends_on:
+      - postgres
+    networks:
+      - microservices-net
+
+  order-service:
+    build:
+      context: .
+      dockerfile: docker/order.Dockerfile
+    ports:
+      - "50053:50053"
+    environment:
+      PORT: 50053
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: orderuser
+      DB_PASSWORD: password
+      DB_NAME: orderdb
+    depends_on:
+      - postgres
+    networks:
+      - microservices-net
+
+  inventory-service:
+    build:
+      context: .
+      dockerfile: docker/inventory.Dockerfile
+    ports:
+      - "50054:50054"
+    environment:
+      PORT: 50054
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: inventoryuser
+      DB_PASSWORD: password
+      DB_NAME: inventorydb
+    depends_on:
+      - postgres
+    networks:
+      - microservices-net
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: docker/gateway.Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      USER_GRPC: "user-service:50051"
+      PRODUCT_GRPC: "product-service:50052"
+      ORDER_GRPC: "order-service:50053"
+      INVENTORY_GRPC: "inventory-service:50054"
+    depends_on:
+      - user-service
+      - product-service
+      - order-service
+      - inventory-service
+    networks:
+      - microservices-net
+
+volumes:
+  postgres-data:
+
+
+networks:
+  microservices-net:
+    driver: bridge

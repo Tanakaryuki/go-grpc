@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package gateway;
+
+option go_package = "github.com/Tanakaryuki/go-grpc/api/gateway;gateway";
+
+import "google/api/annotations.proto";
+
+service Gateway {
+  // Forwarding methods can be defined here if needed.
+}
