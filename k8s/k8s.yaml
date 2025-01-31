@@ -10,9 +10,12 @@ spec:
       app: postgres
   template:
     metadata:
+      annotations:
+        io.containerd.cri.runtime-handler: kata-qemu-sev
       labels:
         app: postgres
     spec:
+      runtimeClassName: kata-qemu-sev
       containers:
       - name: postgres
         image: postgres:13
@@ -89,9 +92,12 @@ spec:
       app: user-service
   template:
     metadata:
+      annotations:
+          io.containerd.cri.runtime-handler: kata-qemu-sev
       labels:
         app: user-service
     spec:
+      runtimeClassName: kata-qemu-sev
       containers:
       - name: user-service
         image: tanakaryuki/user-service:latest
@@ -138,9 +144,12 @@ spec:
       app: product-service
   template:
     metadata:
+      annotations:
+        io.containerd.cri.runtime-handler: kata-qemu-sev
       labels:
         app: product-service
     spec:
+      runtimeClassName: kata-qemu-sev
       containers:
       - name: product-service
         image: tanakaryuki/product-service:latest
@@ -187,9 +196,12 @@ spec:
       app: order-service
   template:
     metadata:
+      annotations:
+        io.containerd.cri.runtime-handler: kata-qemu-sev
       labels:
         app: order-service
     spec:
+      runtimeClassName: kata-qemu-sev
       containers:
       - name: order-service
         image: tanakaryuki/order-service:latest
@@ -236,9 +248,12 @@ spec:
       app: inventory-service
   template:
     metadata:
+      annotations:
+        io.containerd.cri.runtime-handler: kata-qemu-sev
       labels:
         app: inventory-service
     spec:
+      runtimeClassName: kata-qemu-sev
       containers:
       - name: inventory-service
         image: tanakaryuki/inventory-service:latest
@@ -285,9 +300,12 @@ spec:
       app: api-gateway
   template:
     metadata:
+      annotations:
+        io.containerd.cri.runtime-handler: kata-qemu-sev
       labels:
         app: api-gateway
     spec:
+      runtimeClassName: kata-qemu-sev
       containers:
       - name: api-gateway
         image: tanakaryuki/api-gateway:latest
