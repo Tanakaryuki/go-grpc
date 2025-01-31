@@ -53,7 +53,8 @@ spec:
       port: 5432
       targetPort: 5432
   type: ClusterIP
-  ---
+
+---
 # ConfigMap for PostgreSQL Initialization
 apiVersion: v1
 kind: ConfigMap
