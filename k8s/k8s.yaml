@@ -101,7 +101,7 @@ spec:
       containers:
       - name: user-service
         image: tanakaryuki/user-service:latest
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         ports:
         - containerPort: 50051
         env:
@@ -153,7 +153,7 @@ spec:
       containers:
       - name: product-service
         image: tanakaryuki/product-service:latest
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         ports:
         - containerPort: 50052
         env:
@@ -205,7 +205,7 @@ spec:
       containers:
       - name: order-service
         image: tanakaryuki/order-service:latest
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         ports:
         - containerPort: 50053
         env:
@@ -257,7 +257,7 @@ spec:
       containers:
       - name: inventory-service
         image: tanakaryuki/inventory-service:latest
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         ports:
         - containerPort: 50054
         env:
@@ -309,7 +309,7 @@ spec:
       containers:
       - name: api-gateway
         image: tanakaryuki/api-gateway:latest
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         ports:
         - containerPort: 8080
         env:
